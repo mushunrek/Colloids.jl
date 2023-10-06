@@ -1,0 +1,13 @@
+name = "Colloids"
+uuid = "177c68e4-d0a6-4cbb-835e-74d14bd56334"
+authors = ["Julian Kern kern@wias-berlin.de"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
