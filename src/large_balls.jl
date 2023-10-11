@@ -4,7 +4,7 @@ include("helper.jl")
 
 using .Helper
 using StaticArrays
-using Tullio
+using Tullio, LoopVectorization
 using Distributions
 using JLD2, DelimitedFiles, Formatting
 using Plots
@@ -32,9 +32,35 @@ function update_displacement!(
                             ) :
                             @SVector [0.0, 0.0]
                         )
-    displacement .= (Σ'√Δt) .* noise .- (Σ*zs*dls*Δt) .* displacement
+    displacement .= (Σ*√Δt) .* noise .- (Σ*zs*dls*Δt) .* displacement
     return nothing
 end
+
+function update_displacement2!(
+        displacement::Vector{SVector{2, Float64}},
+        coords::Vector{SVector{2, Float64}},
+        Σ, rl,
+        rs, zs, 
+        Δt 
+    )
+    n = length(displacement)
+    noise = copy(reinterpret(SVector{2, Float64}, rand(normal, 2*n)))
+    dls = rl + rs
+    c1 = 4 * dls^2
+    c2 = (Σ*zs*dls*Δt)
+    @tullio displacement[i] = (
+                                (1 < Helper.sq_norm(coords[j] - coords[i]) < c1) ?
+                                    (
+                                        .√(1 .- (coords[j] - coords[i]).^2 ./ c1) 
+                                        .* (coords[j] - coords[i]) 
+                                        ./ √Helper.sq_norm(coords[j] - coords[i])
+                                    ) .* c2 :
+                                    @SVector [0.0, 0.0]
+                            )
+    displacement .= (Σ*√Δt) .* noise .- displacement
+    return nothing
+end
+
 
 function update_displacement__testing!(
                                     displacement::Vector{SVector{2, Float64}},
@@ -46,7 +72,6 @@ function update_displacement__testing!(
                                 )
     dls = rl + rs
     for i in eachindex(coords)
-        @show noise[i]
         displacement[i] = (√Δt * Σ) .* noise[i]
         for j in eachindex(coords)
             rel_pos = coords[j] - coords[i]
@@ -58,17 +83,15 @@ function update_displacement__testing!(
             end
         end
     end
-    """
-    @tullio displacement[i] = (
-                            (1 < Helper.sq_norm(coords[j] - coords[i]) < 4 * dls^2) ?
-                            .√(1 .- (coords[j] - coords[i]).^2 ./ (4 * dls^2)) :
-                            @SVector [0.0, 0.0]
-                        )
-    displacement .= (Σ'√Δt) .* noise .- (Σ*zs*dls*Δt) .* displacement
-    """
     return nothing
 end
 
+"""
+    triangular_index(i, j, n)
+
+Return the index of an element in a lower triangular matrix when elements are 
+indexed columnwise from left to right.
+"""
 @inline triangular_index(i, j, n) = (j-1)*(2*n - j - 2) ÷ 2 + (i - j)
 
 function update_collision_times!(
