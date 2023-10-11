@@ -14,29 +14,6 @@ export simulate_colloids
 normal = Normal()
 
 function update_displacement!(
-                                displacement::Vector{SVector{2, Float64}},
-                                coords::Vector{SVector{2, Float64}},
-                                Σ, rl,
-                                rs, zs, 
-                                Δt 
-                            )
-    n = length(displacement)
-    noise = copy(reinterpret(SVector{2, Float64}, rand(normal, 2*n)))
-    dls = rl + rs
-    @tullio displacement[i] = (
-                            (1 < Helper.sq_norm(coords[j] - coords[i]) < 4 * dls^2) ?
-                            (
-                                .√(1 .- (coords[j] - coords[i]).^2 ./ (4 * dls^2)) 
-                                .* (coords[j] - coords[i]) 
-                                ./ √Helper.sq_norm(coords[j] - coords[i])
-                            ) :
-                            @SVector [0.0, 0.0]
-                        )
-    displacement .= (Σ*√Δt) .* noise .- (Σ*zs*dls*Δt) .* displacement
-    return nothing
-end
-
-function update_displacement2!(
         displacement::Vector{SVector{2, Float64}},
         coords::Vector{SVector{2, Float64}},
         Σ, rl,
