@@ -368,20 +368,41 @@ function ColloidSimulation(
     return ColloidSimulation(coords, Σ, R, rs, zs, T, Δt)
 end
 
+
+"""
+    generate_foldername(sim, path)
+
+Generates a suitable name for the folder where the data will be saved.
+"""
 function generate_foldername(sim::ColloidSimulation, path="./pov/")
     n = length(sim.coords[:, 1])
     "$(path)colloids__n$(n)R$(sim.R)Sigma$(sim.Σ)rs$(sim.rs)zs$(sim.zs)T$(sim.T)dt$(sim.Δt)/"
 end
 
+"""
+    save_colloids(sim, filename)
 
-function save_colloids(coords::Matrix{SVector{2, Float64}}, filename)
-    save_object(filename, coords)
+Saves the simulation into given file.
+"""
+function save_colloids(sim::ColloidSimulation, filename)
+    save_object(filename, sim)
 end
 
+"""
+    load_colloids(filename)
+
+Loads a simulation from a given filename
+"""
 function load_colloids(filename)
     load_object(filename)
 end
 
+"""
+    save_colloids_to_pov(sim, foldername)
+
+Saves the coordinates of the balls in a format suitable for visualisation with 
+the software PovRay.
+"""
 function save_colloids_to_pov(sim::ColloidSimulation, foldername)
     mkpath(foldername)
     cd(foldername)
@@ -404,12 +425,22 @@ function save_colloids_to_pov(sim::ColloidSimulation, foldername)
 end
 
 
+"""
+    circle(c, r)
+
+Returns the circle of center `c` and radius `r`. Used for plotting only.
+"""
 function circle(c, r)
     θ = LinRange(0.0, 2*π, 100)
     c[1] .+ r*cos.(θ), c[2] .+ r*sin.(θ)
 end
 
-function animate(sim::ColloidSimulation)
+"""
+    animate(sim, filename)
+
+Produces a GIF of the simulation and saves it at the given location.
+"""
+function animate(sim::ColloidSimulation, filename)
     anim = @animate for t in 1:size(sim.coords, 2)
         plot(label="t=$t")
         for c in eachrow(sim.coords[:, t])
@@ -425,7 +456,7 @@ function animate(sim::ColloidSimulation)
         end
         plot!()
     end
-    return gif(anim, "~/Downloads/test.gif")
+    return gif(anim, filename)
 end
 
 end
