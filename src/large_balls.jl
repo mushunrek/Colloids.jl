@@ -9,7 +9,7 @@ using Distributions
 using JLD2, DelimitedFiles, Formatting
 using Plots
 
-export simulate_colloids
+export ColloidSimulation, animate
 
 normal = Normal()
 
@@ -233,12 +233,11 @@ function step!(
             Δt, time_tolerance, t,
             noise::Vector{SVector{2, Float64}}
         )
-    @show t
     
     # initialize coordinates with old ones
     coords[:, t+1] .= coords[:, t]
     # compute displacement 
-    update_displacement!(displacement, coords[:, t+1], Σ, rl, rs, zs, Δt, noise[:, t])
+    update_displacement!(displacement, coords[:, t+1], Σ, rl, rs, zs, Δt, noise)
 
     # compute movement with finer resolution given by `time_tolerance`
     remaining_time = Δt
@@ -362,7 +361,7 @@ function ColloidSimulation(
 
     # simulate
     for t in 1:steps
-        step!(coords, displacement, collision_times, Σ, R, rs, zs, t, Δt, time_tolerance, noise[:, t])
+        step!(coords, displacement, collision_times, Σ, R, rs, zs, Δt, time_tolerance, t, noise[:, t])
     end
 
     return ColloidSimulation(coords, Σ, R, rs, zs, T, Δt)
