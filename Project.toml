@@ -3,6 +3,16 @@ uuid = "177c68e4-d0a6-4cbb-835e-74d14bd56334"
 authors = ["Julian Kern kern@wias-berlin.de"]
 version = "1.0.0-DEV"
 
+[deps]
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Formatting = "59287772-0a20-5a39-b81b-1366585eb4c0"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+Tullio = "bc48ee85-29a4-5162-ae0b-a64e1601d4bc"
+
 [compat]
 julia = "1"
 
