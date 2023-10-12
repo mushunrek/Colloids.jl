@@ -3,6 +3,7 @@ module Helper
 using StaticArrays
 using Tullio, LoopVectorization
 
+export triangular_index
 export check_overlap, collision_time, check_collision
 
 
@@ -11,6 +12,16 @@ export check_overlap, collision_time, check_collision
 
 @inline modifier(rel_pos::SVector{2, Float64}, rel_prod, rel_dist_sq) = (rel_prod / rel_dist_sq) .* rel_pos
 @inline modifier(rel_pos::SVector{2, Float64}, rel_prod) = modifier(rel_pos, rel_prod, sq_norm(rel_pos))
+
+
+"""
+    triangular_index(i, j, n)
+
+Return the index of an element at position `(i,j)`in a lower triangular `n×n` matrix 
+when elements are indexed columnwise from left to right.
+"""
+@inline triangular_index(i, j, n) = (j-1)*(2*n - j - 2) ÷ 2 + (i - j)
+
 
 """
     resolve_overlaps(relative_position, relative_displacement, d2)

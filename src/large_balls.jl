@@ -56,15 +56,6 @@ end
 
 
 """
-    triangular_index(i, j, n)
-
-Return the index of an element at position `(i,j)`in a lower triangular `n×n` matrix 
-when elements are indexed columnwise from left to right.
-"""
-@inline triangular_index(i, j, n) = (j-1)*(2*n - j - 2) ÷ 2 + (i - j)
-
-
-"""
     update_collision_times!(collision_times, coords, displacement, rl, remaining_time)
 
 Computes the new collision times in place and returns the next collision time.
