@@ -232,7 +232,7 @@ function step!(
 
     # compute movement with finer resolution given by `time_tolerance`
     remaining_time = Δt
-    while remaining_time > 0
+    while remaining_time > 0.0
         # resolve overlaps due to imprecisions
         resolve_overlaps!(displacement, coords[:, t+1], rl)
         # compute times of potential collisions
@@ -340,15 +340,7 @@ function ColloidSimulation(
     collision_times = zeros(Float64, n*(n-1)÷2)
 
     # pre-allocate standard normal random variables
-    noise = reshape(
-        copy(
-            reinterpret(
-                SVector{2, Float64},
-                rand(normal, 2*n*steps)
-            )
-        ),
-        (n, steps)
-    )
+    noise = generate_noise(n, steps)
 
     # simulate
     for t in 1:steps
