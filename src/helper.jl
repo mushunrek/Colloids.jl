@@ -2,11 +2,14 @@ module Helper
 
 using StaticArrays
 using Tullio, LoopVectorization
+using Distributions
 
 export Particle, Ball, Fluid
 export radius, d, diffusivity, density
-export triangular_index
+export triangular_index, generate_noise
 export check_overlap, collision_time, check_collision
+
+global const normal = Normal()
 
 abstract type Particle end
 
@@ -40,6 +43,18 @@ Return the index of an element at position `(i,j)`in a lower triangular `n×n` m
 when elements are indexed columnwise from left to right.
 """
 @inline triangular_index(i, j, n) = (j-1)*(2*n - j - 2) ÷ 2 + (i - j)
+
+function generate_noise(n, m)
+    reshape(
+        copy(
+            reinterpret(
+                SVector{2, Float64},
+                rand(normal, 2*n*m)
+            )
+        ),
+        (n, m)
+    )
+end
 
 
 """
