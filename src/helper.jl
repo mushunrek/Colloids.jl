@@ -3,8 +3,27 @@ module Helper
 using StaticArrays
 using Tullio, LoopVectorization
 
+export Particle, Ball, Fluid
+export radius, d, diffusivity, density
 export triangular_index
 export check_overlap, collision_time, check_collision
+
+abstract type Particle end
+
+struct Ball
+    R::Float64
+    Σ::Float64
+end
+
+struct Fluid
+    R::Float64
+    density::Float64
+end
+
+@inline radius(p::Particle) = p.R
+@inline d(p1::Particle, p2::Particle) = radius(p1) + radius(p2)
+@inline diffusivity(b::Ball) = b.Σ
+@inline density(f::Fluid) = f.density
 
 
 @inline dot(x::SVector{2, Float64}, y::SVector{2, Float64}) = x[1]*y[1] + x[2]*y[2]
