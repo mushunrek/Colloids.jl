@@ -167,6 +167,8 @@ function handle_collision!(
             semicolloid_collision_times::Vector{Float64},
             time_horizon
         )
+    n = length(colloid_coords)
+
     unresolved_collisions = true
     while unresolved_collisions
         unresolved_collisions = false
@@ -201,7 +203,7 @@ function handle_collision!(
                     if collision
                         unresolved_collisions = true
                         colloid_displacement[j] -= modifier 
-                        semicolloid_displacement += modifier
+                        semicolloid_displacement[i] += modifier
                     end
                 end
             end
