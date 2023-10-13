@@ -119,7 +119,7 @@ function update_collision_times!(
 
     diff = length(colliding_semicolloids) - length(semicolloid_collision_times)
     if diff > 0
-        append!(semicolloid_collision_times, zeros(Float64)(diff))
+        append!(semicolloid_collision_times, zeros(Float64, diff))
     end
 
     n = length(colloid_coords)
@@ -341,7 +341,9 @@ function step!(
 
             time_fraction = time_horizon / remaining_time
             @. colloid_coords[:, t+1] += time_fraction  * colloid_displacement
-            @. semicolloid_coords[:, t+1] *= (1- time_fraction)
+            @. colloid_displacement *= (1 - time_fraction)
+            @. semicolloid_coords[:, t+1] += time_fraction * semicolloid_displacement
+            @. semicolloid_displacement *= (1 - time_fraction) 
 
             handle_collision!(
                     colloid_displacement,
