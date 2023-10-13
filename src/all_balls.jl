@@ -281,8 +281,8 @@ function step!(
             estimated_max_dist_sq
         )
 
-    colloid_coords[:, t+1] .= colloid_coords[:, t]
-    semicolloid_coords[:, t+1] .= semicolloid_coords[:, t]
+    @. colloid_coords[:, t+1] = colloid_coords[:, t]
+    @. semicolloid_coords[:, t+1] = semicolloid_coords[:, t]
 
     update_displacement!(
             colloid_displacement,
