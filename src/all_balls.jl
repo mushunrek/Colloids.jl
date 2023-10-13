@@ -36,13 +36,13 @@ function update_displacement!(
         )
     sqrtΔt = √Δt
 
-    @.colloid_displacement = (
-        (sqrtΔt * diffusivity(colloid)) * colloid_noise
-        - colloid.potential(colloid_coords)
+    colloid_displacement .= (
+        (sqrtΔt * diffusivity(colloid)) .* colloid_noise
+        .- colloid.potential.(colloid_coords)
     )
-    @. semicolloid_displacement = (
-        (sqrtΔt * diffusivity(semicolloid)) * semicolloid_noise
-        - semicolloid.potential(semicolloid_coords)
+    semicolloid_displacement .= (
+        (sqrtΔt * diffusivity(semicolloid)) .* semicolloid_noise
+        .- semicolloid.potential.(semicolloid_coords)
     )
     nothing
 end
@@ -77,7 +77,7 @@ end
 
 function update_collision_times!(
             colloid_collision_times::Vector{Float64},
-            semicolloid_collision_times::Vector{Float16},
+            semicolloid_collision_times::Vector{Float64},
             colloid_coords::CoordinateList,
             semicolloid_coords::CoordinateList,
             colloid_displacement::CoordinateList,
@@ -114,7 +114,7 @@ function update_collision_times!(
             end
         end
 
-        for k in curr:curr+potential_collisions_per_colloid[j]
+        for k in curr:curr+potential_collisions_per_colloid[j]-1
             i = colliding_semicolloids[k]
             semicolloid_collision_times[k] = Helper.collision_time(
                 semicolloid_coords[i] - colloid_coords[j],
@@ -126,7 +126,7 @@ function update_collision_times!(
                 next_collision_time = semicolloid_collision_times[k]
             end
         end
-        curr += potential_collisions_per_colloid[j] + 1
+        curr += potential_collisions_per_colloid[j]
     end
     return next_collision_time
 end
@@ -164,7 +164,7 @@ function handle_collision!(
                 end
             end
 
-            for k in curr:curr+potential_collisions_per_colloid[j]
+            for k in curr:curr+potential_collisions_per_colloid[j]-1
                 if semicolloid_collision_times[k] ≤ time_horizon
                     i = colliding_semicolloids[k]
 
@@ -180,7 +180,7 @@ function handle_collision!(
                     end
                 end
             end
-            curr += potential_collisions_per_colloid[j] + 1
+            curr += potential_collisions_per_colloid[j]
         end
     end
     nothing
@@ -196,7 +196,7 @@ function resolve_overlaps!(
             potential_collisions_per_colloid::Vector{Int},
             colliding_colloids::Vector{Int}
         )
-    n = length(coords)
+    n = length(colloid_coords)
     dll = 2*radius(colloid)
     dls = d(colloid, semicolloid)
 
@@ -219,7 +219,7 @@ function resolve_overlaps!(
                 end
             end
 
-            for k in curr:curr+potential_collisions_per_colloid[j]
+            for k in curr:curr+potential_collisions_per_colloid[j]-1
                 i = colliding_colloids[k]
 
                 overlap, modifier = Helper.check_overlap(
@@ -234,7 +234,7 @@ function resolve_overlaps!(
                     semicolloid_displacement[i] += modifier
                 end
             end
-            curr += potential_collisions_per_colloid[j] + 1
+            curr += potential_collisions_per_colloid[j]
         end
     end
 end
@@ -243,28 +243,39 @@ function step!(
             colloid_coords::CoordinateMatrix,
             semicolloid_coords::CoordinateMatrix,
             colloid_displacement::CoordinateList,
-            semicolloid_displacement::CoordinateListm,
+            semicolloid_displacement::CoordinateList,
             potential_collisions_per_colloid::Vector{Int},
             colliding_semicolloids::Vector{Int},
+            colloid_collision_times::Vector{Float64},
+            semicolloid_collision_times::Vector{Float64},
             colloid::Ball,
             semicolloid::Ball,
             Δt, time_tolerance, t,
             colloid_noise::CoordinateList,
-            semicolloid_noise::CoordinateList
+            semicolloid_noise::CoordinateList,
+            estimated_max_dist_sq
         )
 
-        colloid_coords[:, t+1] .= colloid_coords[:, t]
-        semicolloid_coords[:, t+1] .= semicolloid_coords[:, t]
+    colloid_coords[:, t+1] .= colloid_coords[:, t]
+    semicolloid_coords[:, t+1] .= semicolloid_coords[:, t]
 
-        update_displacement!(
+    update_displacement!(
             colloid_displacement,
             semicolloid_displacement,
-            colloid_coords,
-            semicolloid_coords,
+            colloid_coords[:, t+1],
+            semicolloid_coords[:, t+1],
             colloid, semicolloid,
             Δt, 
             colloid_noise, semicolloid_noise
         )
+
+    update_potential_collisions!(
+        potential_collisions_per_colloid,
+        colliding_semicolloids,
+        colloid_coords[:, t+1],
+        semicolloid_coords[:, t+1],
+        estimated_max_dist_sq
+    )
 
     remaining_time = Δt
     while remaining_time > 0.0
@@ -275,14 +286,14 @@ function step!(
                 semicolloid_coords[:, t+1],
                 colloid, semicolloid,
                 potential_collisions_per_colloid,
-                colliding_colloids
+                colliding_semicolloids
             )
 
         next_collision_time = update_collision_times!(
                 colloid_collision_times,
                 semicolloid_collision_times,
-                colloid_coords,
-                semicolloid_coords,
+                colloid_coords[:, t+1],
+                semicolloid_coords[:, t+1],
                 colloid_displacement,
                 semicolloid_displacement,
                 potential_collisions_per_colloid,
@@ -310,8 +321,8 @@ function step!(
             handle_collision!(
                     colloid_displacement,
                     semicolloid_displacement,
-                    colloid_coords,
-                    semicolloid_coords,
+                    colloid_coords[:, t+1],
+                    semicolloid_coords[:, t+1],
                     colloid_collision_times,
                     potential_collisions_per_colloid,
                     colliding_semicolloids,
