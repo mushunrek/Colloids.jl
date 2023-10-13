@@ -10,10 +10,35 @@ using JLD2, DelimitedFiles, Formatting
 using Plots
 
 
-export SemiColloidSimulation, animate
+export MixtureSimulation, animate
+export no_potential, quadratic, delayed_quadratic
+export Particle, Ball, Fluid 
+export radius, d, diffusivity, density 
+export no_potential, quadratic, delayed_quadratic
 
 const CoordinateList = Vector{SVector{2, Float64}}
 const CoordinateMatrix = Matrix{SVector{2, Float64}}
+
+abstract type Particle end
+
+struct Ball <: Particle
+    R::Float64
+    Σ::Float64
+    potential
+end
+
+Ball(R, Σ; potential=(x -> zeros(SVector{2, Float64}))) = Ball(R, Σ, potential)
+
+struct Fluid <: Particle
+    R::Float64
+    density::Float64
+end
+
+@inline radius(p::Particle) = p.R
+@inline d(p1::Particle, p2::Particle) = radius(p1) + radius(p2)
+@inline diffusivity(b::Ball) = b.Σ
+@inline density(f::Fluid) = f.density
+
 
 no_potential(x) = zeros(SVector{2, Float64})
 quadratic(x; strength) = strength*x
