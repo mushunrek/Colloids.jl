@@ -361,4 +361,62 @@ function step!(
     nothing
 end
 
+
+struct MixtureSimulation
+    colloid_coords::CoordinateMatrix
+    semicolloid_coords::CoordinateMatrix
+    colloid::Ball
+    semicolloid::Ball 
+    T::Float64
+    Δt::Float64
+end
+
+function MixtureSimulation(
+            colloid_initial::CoordinateList,
+            semicolloid_initial::CoordinateList,
+            colloid::Ball,
+            semicolloid::Ball,
+            T, Δt, time_tolerance
+        )
+    n = length(colloid_initial)
+    m = length(semicolloid_initial)
+    steps = floor(Int, T/Δt)
+
+    colloid_coords = zeros(SVector{2, Float64}, n, steps+1)
+    colloid_coords[:, 1] = colloid_initial
+    semicolloid_coords = zeros(SVector{2, Float64}, m, steps+1)
+    semicolloid_coords[:, 1] = semicolloid_initial
+
+    colloid_displacement = zeros(SVector{2, Float64}, n)
+    semicolloid_displacement = zeros(SVector{2, Float64}, m)
+
+    potential_collisions_per_colloid = zeros(Int, n)
+    colliding_semicolloids = zeros(Int, m)
+
+    colloid_collision_times = zeros(Float64, n*(n-1)÷2)
+    semicolloid_collision_times = zeros(Float64, m)
+
+    estimated_max_travel = 7√Δt * (diffusivity(colloid) + diffusivity(semicolloid))
+    estimated_max_dist_sq = (estimated_max_travel + d(colloid, semicolloid))^2
+
+    colloid_noise = generate_noise(n, steps)
+    semicolloid_noise = generate_noise(m, steps)
+
+    for t in 1:steps
+        step!(
+            colloid_coords, semicolloid_coords,
+            colloid_displacement, semicolloid_displacement,
+            potential_collisions_per_colloid, colliding_semicolloids,
+            colloid_collision_times, semicolloid_collision_times,
+            colloid, semicolloid,
+            Δt, time_tolerance, t,
+            colloid_noise[:, t],
+            semicolloid_noise[:, t],
+            estimated_max_dist_sq
+        )
+    end
+
+    return MixtureSimulation(colloid_coords, semicolloid_coords, colloid, semicolloid, T, Δt)
+end
+
 end
