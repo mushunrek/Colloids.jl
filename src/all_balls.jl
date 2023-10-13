@@ -421,4 +421,43 @@ function MixtureSimulation(
     return MixtureSimulation(colloid_coords, semicolloid_coords, colloid, semicolloid, T, Δt)
 end
 
+function circle(c, r)
+    θ = LinRange(0.0, 2*π, 100)
+    c[1] .+ r*cos.(θ), c[2] .+ r*sin.(θ)
+end
+
+"""
+    animate(sim, filename)
+
+Produces a GIF of the simulation and saves it at the given location.
+"""
+function animate(sim::MixtureSimulation, filename; fps=20)
+    anim = @animate for t in 1:size(sim.colloid_coords, 2)
+        plot(label="t=$t")
+        for i in eachindex(sim.colloid_coords[:, t])
+            plot!(
+                circle(sim.colloid_coords[i, t], radius(sim.colloid)),
+                seriestype=:shape,
+                fillaplha=0.8,
+                label=false,
+                aspect_ratio=1,
+                xlims=(-10.0, 20.0),
+                ylims=(-10.0, 20.0)
+            )
+        end
+        for i in eachindex(sim.semicolloid_coords[:, t])
+            plot!(circle(sim.semicolloid_coords[i, t], radius(sim.semicolloid)),
+            seriestype=:shape,
+            fillaplha=0.2,
+            label=false,
+            aspect_ratio=1,
+            xlims=(-10.0, 20.0),
+            ylims=(-10.0, 20.0)
+        )
+        end
+        plot!()
+    end
+    return gif(anim, filename, fps=fps)
+end
+
 end
