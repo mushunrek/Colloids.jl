@@ -87,7 +87,7 @@ function update_collision_times!(
             @inbounds collision_times[q] = Helper.collision_time(
                                             coords[i] - coords[j],
                                             displacement[i] - displacement[j],
-                                            d, remaining_time
+                                            d^2, remaining_time
                                         )
             # update `next_collision_time` if necessary
             @inbounds if collision_times[q] < next_collision_time
@@ -173,7 +173,7 @@ function resolve_overlaps!(
                 collision, modifier = Helper.check_overlap(
                                                 coords[i] - coords[j],
                                                 displacement[i] - displacement[j],
-                                                d
+                                                d^2
                                             )
                 # update displacement if necessary
                 if collision

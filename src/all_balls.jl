@@ -131,7 +131,7 @@ function update_collision_times!(
             colloid_collision_times[q] = Helper.collision_time(
                 colloid_coords[i] - colloid_coords[j],
                 colloid_displacement[i] - colloid_displacement[j],
-                dll, remaining_time
+                dll^2, remaining_time
             )
 
             if colloid_collision_times[q] < next_collision_time
@@ -144,7 +144,7 @@ function update_collision_times!(
             semicolloid_collision_times[k] = Helper.collision_time(
                 semicolloid_coords[i] - colloid_coords[j],
                 semicolloid_displacement[i] - colloid_displacement[j],
-                dls, remaining_time
+                dls^2, remaining_time
             )
 
             if semicolloid_collision_times[k] < next_collision_time
@@ -236,7 +236,7 @@ function resolve_overlaps!(
                 overlap, modifier = Helper.check_overlap(
                     colloid_coords[i] - colloid_coords[j],
                     colloid_displacement[i] - colloid_displacement[j],
-                    dll
+                    dll^2
                 )
 
                 if overlap
@@ -252,7 +252,7 @@ function resolve_overlaps!(
                 overlap, modifier = Helper.check_overlap(
                     colloid_coords[j] - semicolloid_coords[i],
                     colloid_displacement[j] - semicolloid_displacement[i],
-                    dls
+                    dls^2
                 )
 
                 if overlap
@@ -407,6 +407,7 @@ function MixtureSimulation(
     semicolloid_noise = generate_noise(m, steps)
 
     for t in 1:steps
+        @show t
         step!(
             colloid_coords, semicolloid_coords,
             colloid_displacement, semicolloid_displacement,
@@ -435,6 +436,9 @@ Produces a GIF of the simulation and saves it at the given location.
 """
 function animate(sim::MixtureSimulation, filename; fps=20)
     anim = @animate for t in 1:size(sim.colloid_coords, 2)
+        (t % 20 == 0) || continue
+        @show t
+
         plot(label="t=$t")
         for i in eachindex(sim.colloid_coords[:, t])
             plot!(
@@ -443,20 +447,23 @@ function animate(sim::MixtureSimulation, filename; fps=20)
                 fillaplha=0.8,
                 label=false,
                 aspect_ratio=1,
-                xlims=(-10.0, 20.0),
-                ylims=(-10.0, 20.0)
+                xlims=(-5.0, 5.0),
+                ylims=(-5.0, 5.0)
             )
         end
+        
+        
         for i in eachindex(sim.semicolloid_coords[:, t])
             plot!(circle(sim.semicolloid_coords[i, t], radius(sim.semicolloid)),
-            seriestype=:shape,
-            fillaplha=0.2,
-            label=false,
-            aspect_ratio=1,
-            xlims=(-10.0, 20.0),
-            ylims=(-10.0, 20.0)
-        )
+                seriestype=:shape,
+                fillaplha=0.2,
+                label=false,
+                aspect_ratio=1,
+                #xlims=(-10.0, 20.0),
+                #ylims=(-10.0, 20.0)
+            )
         end
+        
         plot!()
     end
     return gif(anim, filename, fps=fps)
