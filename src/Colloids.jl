@@ -161,12 +161,16 @@ end
 
 Produces a GIF of the simulation and saves it at the given location.
 """
-function animate(sim::ColloidsInFluid, filename; fps=20)
+function animate(sim::ColloidsInFluid, filename; fps=20, skipframes=0)
     anim = @animate for t in 1:size(sim.coords, 2)
+        ((t-1) % (skipframes+1) == 0) || continue
+
         plot(label="t=$t")
         for c in eachrow(sim.coords[:, t])
             plot!(
-                circle(c[1], radius(sim.colloid)),
+                circle(
+                    c[1], radius(sim.colloid)
+                ),
                 seriestype=:shape,
                 fillaplha=0.2,
                 label=false,
@@ -186,15 +190,16 @@ end
 
 Produces a GIF of the simulation and saves it at the given location.
 """
-function animate(sim::ColloidsInSemicolloids, filename; fps=20)
+function animate(sim::ColloidsInSemicolloids, filename; fps=20, skipframes=0, semicolloids=true)
     anim = @animate for t in 1:size(sim.colloid_coords, 2)
-        (t % 20 == 0) || continue
-        @show t
+        ((t-1) % (skipframes+1) == 0) || continue
 
         plot(label="t=$t")
         for i in eachindex(sim.colloid_coords[:, t])
             plot!(
-                circle(sim.colloid_coords[i, t], radius(sim.colloid)),
+                circle(
+                    sim.colloid_coords[i, t], radius(sim.colloid)
+                ),
                 seriestype=:shape,
                 fillaplha=0.8,
                 label=false,
@@ -204,16 +209,15 @@ function animate(sim::ColloidsInSemicolloids, filename; fps=20)
             )
         end
         
-        
-        for i in eachindex(sim.semicolloid_coords[:, t])
-            plot!(circle(sim.semicolloid_coords[i, t], radius(sim.semicolloid)),
-                seriestype=:shape,
-                fillaplha=0.2,
-                label=false,
-                aspect_ratio=1,
-                #xlims=(-10.0, 20.0),
-                #ylims=(-10.0, 20.0)
-            )
+        if semicolloids
+            for i in eachindex(sim.semicolloid_coords[:, t])
+                plot!(
+                    circle(
+                        sim.semicolloid_coords[i, t], radius(sim.semicolloid)
+                    ),
+                    seriestype=:shape,
+                )
+            end
         end
         
         plot!()
