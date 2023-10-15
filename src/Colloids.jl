@@ -106,21 +106,22 @@ animate(sim, "test.gif")
 ```
 """
 function ColloidsInFluid(
-                    initial::PointList,
+                    initial,
                     colloid::Ball,
                     fluid::Fluid,
                     T, Δt, time_tolerance
                 )
-    T = convert(Float64, T)
-    Δt = convert(Float64, Δt)
-    time_tolerance = convert(Float64, time_tolerance)
+    T = Float64(T)
+    Δt = Float64(Δt)
+    time_tolerance = Float64(time_tolerance)
+    initial = PointList(initial)
 
     n = length(initial)
     steps = floor(Int, T / Δt)
 
     # pre-allocate coordinates for the whole simulation
     coords = zeros(Point, n, steps+1)
-    # initialize coordinates at time `t = 0`
+    # initialize coordinates at time `t = 0, converting to `PointList`
     coords[:, 1] = initial
 
     # pre-allocate containers for displacement and times of potential collisions
@@ -197,16 +198,18 @@ animate(sim, "test.gif")
 ```
 """
 function ColloidsInSemicolloids(
-            colloid_initial::PointList,
-            semicolloid_initial::PointList,
+            colloid_initial,
+            semicolloid_initial,
             colloid::Ball,
             semicolloid::Ball,
             T, Δt, time_tolerance;
             estimated_max_travel=missing
         )
-    T = convert(Float64, T)
-    Δt = convert(Float64, Δt)
-    time_tolerance = convert(Float64, time_tolerance)
+    T = Float64(T)
+    Δt = Float64(Δt)
+    time_tolerance = Float64(time_tolerance)
+    colloid_initial = PointList(colloid_initial)
+    semicolloid_initial = PointList(semicolloid_initial)
 
     n = length(colloid_initial)
     m = length(semicolloid_initial)
@@ -228,9 +231,9 @@ function ColloidsInSemicolloids(
 
     if estimated_max_travel === missing
         # use extreme value theorem to estimate upper bound for the maximum displacement 
-        estimated_max_travel = 2*√Δt * (
-            diffusivity(colloid) * √(2*log(n))
-            + diffusivity(semicolloid) * √(2*log(m))
+        estimated_max_travel = 4*√Δt * (
+            diffusivity(colloid) * √(log(n))
+            + diffusivity(semicolloid) * √(log(m))
         )
     end
     estimated_max_dist_sq = (estimated_max_travel + diameter(colloid, semicolloid))^2
@@ -331,6 +334,7 @@ function animate(sim::ColloidsInSemicolloids, filename; fps=20, skipframes=0, se
                         sim.semicolloid_coords[i, t], radius(sim.semicolloid)
                     ),
                     seriestype=:shape,
+                    label=false
                 )
             end
         end
