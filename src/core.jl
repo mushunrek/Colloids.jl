@@ -1,3 +1,9 @@
+"""
+# Warning
+
+Most of the functions in this module makes use of `@inbounds` and are thus UNSAFE
+if not used correctly. 
+"""
 module ColloidsCore
 
 using Distributions
@@ -53,6 +59,12 @@ Determines whether two balls collide and compute the resulting change in displac
     return false, zeros(Point)
 end
 
+"""
+    collision_time(relative_position::Point, relative_displacement::Point, sq_diam, remaining_time)
+
+Computes the time of collision between two colloids. `sq_diam` is the squared 
+sum of radii.
+"""
 @inline function collision_time(
         relative_position::Point,
         relative_displacement::Point,
@@ -71,6 +83,11 @@ end
     return Inf
 end
 
+"""
+    check_collision(relative_position::Point, relative_displacement::Point)
+
+Computes whether a collision occurs and, if so, the necessary modifier.
+"""
 @inline function check_collision(
         relative_position::Point,
         relative_displacement::Point
