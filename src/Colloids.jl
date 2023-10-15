@@ -1,7 +1,25 @@
+"""
+    Colloids
+
+A Julia module to simulate colloids.
+
+# API 
+
+- `ColloidsInFluid` simulates colloids in a fluid of microscopic particles by 
+    simulating the depletion directly.
+- `ColloidsInSemicolloids` simulates colloids in contact with semicolloids 
+    (i.e. colloids that do not interact with other particles of the same type).
+
+# Exported names
+
+    Point, Pointlist,
+    Potential, Null, Quadratic, DelayedQuadratic,
+    Particle, Ball, Fluid,
+    ColloidsInFluid, ColloidsInSemicolloids,
+    animate
+"""
 module Colloids
 
-using StaticArrays
-using Distributions 
 using LoopVectorization
 using JLD2, DelimitedFiles, Formatting
 using Plots
@@ -20,14 +38,32 @@ export Particle, Ball, Fluid
 export ColloidsInFluid, ColloidsInSemicolloids
 export animate
 
+"""
+# Type docstring
+    ColloidsInFluid(coords::PointMatrix, colloid::Ball, fluid::Fluid, T::Float64, Δt::Float64)
 
+Object containing the simulation data with given parameters. `coords` contains the
+full evolution with dimensions (coordinates, time).
+"""
 struct ColloidsInFluid
     coords::PointMatrix
     colloid::Ball
+    fluid::Fluid
     T::Float64
     Δt::Float64
 end
 
+"""
+# Type docstring
+    ColloidsInSemicolloids(
+        colloid_coords::PointMatrix, semicolloid_coords::PointMatrix,
+        colloid::Ball, semicolloid::Ball,
+        T::Float64, Δt::Float64
+    )
+
+Object containing the simulation data with given parameters. `colloid_coords` 
+and `semicolloid_coords` contain the full evolution with dimensions (coordinates, time).
+"""
 struct ColloidsInSemicolloids
     colloid_coords::PointMatrix
     semicolloid_coords::PointMatrix
@@ -37,6 +73,38 @@ struct ColloidsInSemicolloids
     Δt::Float64
 end
 
+"""
+# Constructor 
+    ColloidsInFluid(initial, colloid::Ball, fluid::Fluid, T, Δt, time_tolerance)
+
+Constructs the full simulation starting from the initial condition `initial`.
+- `initial`: initial configuration of colloids
+- `colloid::Ball`: parameters for colloid 
+- `fluid::Fluid`: parameters for fluid
+- `T`: time horizon for simulation 
+- `Δt`: time step for simulation 
+- `time_tolerance`: temporal resolution for collisions
+
+# Example 
+
+```
+using Colloids 
+
+initial = [ [1.42*i, 1.42*i] for i in 1:10 ]
+
+# radius = 1.0, diffusivity = 1.0
+colloid = Ball(1.0, 1.0)
+# radius = 0.2, density = 10.0
+fluid = Fluid(0.2, 10.0)
+
+T = 1.0
+Δt = 0.1
+time_tolerance = 1e-5
+
+sim = ColloidsInFluid(initial, colloid, fluid, T, Δt, time_tolerance)
+animate(sim, "test.gif")
+```
+"""
 function ColloidsInFluid(
                     initial::PointList,
                     colloid::Ball,
@@ -78,9 +146,56 @@ function ColloidsInFluid(
         )
     end
 
-    return ColloidsInFluid(coords, colloid, T, Δt)
+    return ColloidsInFluid(coords, colloid, fluid, T, Δt)
 end
 
+"""
+# Constructor 
+    ColloidsInSemicolloids(
+        colloid_initial, semicolloid_initial,
+        colloid::Ball, semicolloid::Ball,
+        T, Δt, time_tolerance
+        [, estimated_max_travel]
+    )
+
+Constructs the full simulation starting from `colloid_initial` and `semicolloid_initial`.
+
+- `colloid_initial`: initial configuration of colloids
+- `semicolloid_initial`: initial configuration of semicolloids
+- `colloid::Ball`: parameters for colloids 
+- `semicolloid::Ball`: parameters for semicolloids 
+- `T`: time horizon for simulation 
+- `Δt`: time step for simulation 
+- `time_tolerance`: time resolution for collisions 
+- `estimated_max_travel`: (default is `missing`) upper bound for the maximal displacement 
+    of (semi)colloids. If set `missing`, extremal theory is used to estimate an 
+    upper bound. Simulations are only exact if set to `Inf`, but then the complexity
+    goes to `O(number of colloids * number of semicolloids)`.
+
+# Example 
+
+```
+using Colloids 
+using Distributions
+
+normal = Normal()
+    
+colloid_initial = [ [1.42*i, 1.42*i] for i in 1:10 ]
+semicolloid_initial = rand(normal, 10^3, 2)
+    
+# radius = 1.0, diffusivity = 1.0
+colloid = Ball(1.0, 1.0)
+# radius = 0.2, diffusivity = 10.0
+semicolloid = Ball(0.2, 1.0)
+    
+T = 1.0
+Δt = 0.1
+time_tolerance = 1e-5
+    
+sim = ColloidsInSemicolloids(colloid_initial, semicolloid_initial, colloid, semicolloid, T, Δt, time_tolerance)
+animate(sim, "test.gif")
+```
+"""
 function ColloidsInSemicolloids(
             colloid_initial::PointList,
             semicolloid_initial::PointList,
