@@ -71,12 +71,11 @@ As explained in Section 3 of the paper, the equilibrium measure of the system ha
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $n=4,\rho=0.25,\dot{\sigma}=0.8,\dot{z}\simeq 25$
 
-## Usage
-The above simulations are only a small sample of possible interesting effects. The interested reader can perform simulations with their own set of parameters using the Python class colloid created for the paper.
+## Installation
+Install the package by opening Julia's Package manager (by pressing `]` and then `Enter`) and typing
+`add "git@lab.wias-berlin.de:kern/colloids.jl.git"`. You can remove the package by typing `remove Colloids` in the Package manager environment.
 
-Run balls_in_particles.py for the spheres in random medium (or balls_in_fluid.py for the drifted sphere system) with parameters file corresponding to the given initial configurations of the spheres and the particles. The numerical result is a collection of .csv files containing the coordinates of each balls at each time.
-
-For a visualisation of the result, use the .ini and .pov files to run <a href="http://povray.org/" target="_blank">PoV-Ray</a> with the same parameters (or these .ini and .pov for the drifted dynamics instead of random medium dynamics).
+## Example Code
 
 
 ## Authors
