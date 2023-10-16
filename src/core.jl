@@ -621,8 +621,8 @@ function step!(
             )
 
         if next_collision_time ≥ remaining_time
-            colloid_coords[:, t+1] .+= colloid_displacement
-            semicolloid_coords[:, t+1] .+= semicolloid_displacement
+            @inbounds @. colloid_coords[:, t+1] += colloid_displacement
+            @inbounds @. semicolloid_coords[:, t+1] += semicolloid_displacement
             remaining_time = 0.0
         else
             time_horizon = min(
@@ -633,10 +633,10 @@ function step!(
                 )
 
             time_fraction = time_horizon / remaining_time
-            @. colloid_coords[:, t+1] += time_fraction  * colloid_displacement
-            @. colloid_displacement *= (1 - time_fraction)
-            @. semicolloid_coords[:, t+1] += time_fraction * semicolloid_displacement
-            @. semicolloid_displacement *= (1 - time_fraction) 
+            @inbounds @. colloid_coords[:, t+1] += time_fraction  * colloid_displacement
+            @inbounds @. colloid_displacement *= (1 - time_fraction)
+            @inbounds @. semicolloid_coords[:, t+1] += time_fraction  * semicolloid_displacement
+            @inbounds @. semicolloid_displacement *= (1 - time_fraction)
 
             handle_collision!(
                     colloid_displacement,
