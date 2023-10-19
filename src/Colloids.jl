@@ -22,7 +22,7 @@ module Colloids
 
 using LoopVectorization
 using JLD2, DelimitedFiles, Formatting
-using Plots
+using Plots, PoVRay
 
 include("points.jl")
 include("potentials.jl")
@@ -36,7 +36,7 @@ export Point, PointList
 export Potential, Null, Quadratic, DelayedQuadratic
 export Particle, Ball, Fluid 
 export ColloidsInFluid, ColloidsInSemicolloids
-export animate
+export animate, povray
 
 """
 # Type docstring
@@ -138,7 +138,7 @@ function ColloidsInFluid(
 
     # simulate
     for t in 1:steps
-        @show t
+        #@show t
         step!(
             coords, displacement, collision_times, 
             magic_cst1, magic_cst2, sq_diam, 
@@ -245,7 +245,7 @@ function ColloidsInSemicolloids(
     scaled_semicolloid_noise = (diffusivity(semicolloid)*√Δt) .* generate_noise(m, steps)
 
     for t in 1:steps
-        @show t
+        #@show t
         step!(
             colloid_coords, semicolloid_coords,
             colloid_displacement, semicolloid_displacement,
@@ -343,5 +343,29 @@ function animate(sim::ColloidsInSemicolloids, filename; fps=20, skipframes=0, se
     end
     return gif(anim, filename, fps=fps)
 end
+
+
+function povray(sim::ColloidsInFluid, output_path::String="./test.mp4")
+    mkpath("/tmp/pov")
+    center = sum(sim.coords[:, end])/length(sim.coords[:, end])
+    k = floor(Int, log(10, length(sim.coords[1, :]))) + 1
+    Threads.@threads for t in eachindex(sim.coords[1,:])
+        coords = sim.coords[:, t]
+        objects = Array{Object}(undef, length(coords))
+        @inbounds @simd for i in eachindex(coords)
+            p = [ coords[i][1], 0.0, coords[i][2] ]
+            objects[i] = Colored(Sphere(p, radius(sim.colloid)), RGBFT("red"))
+        end
+        render(
+            CSGUnion(objects), 
+            LookAtCamera([center[1], 40.0, center[2]], [center[1], 0.0, center[2]]), 
+            ini_path="/tmp/pov/auto_generated$t.ini",
+            pov_path="/tmp/pov/auto_generated$t.pov",
+            output_path="/tmp/pov/pic$(t).png"
+        )
+    end
+    run(`ffmpeg -y -framerate 10 -i /tmp/pov/pic%d.png -c:v libx264 -pix_fmt yuv420p $output_path`)
+end
+
 
 end
