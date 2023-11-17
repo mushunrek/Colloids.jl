@@ -393,7 +393,6 @@ function update_potential_collisions!(
     nothing
 end
 
-
 function resolve_overlaps!(
             colloid_displacement::PointList,
             semicolloid_displacement::PointList,
@@ -443,7 +442,6 @@ function resolve_overlaps!(
         end
     end
 end
-
 
 function update_collision_times!(
             colloid_collision_times::Vector{Float64},
@@ -554,8 +552,6 @@ function handle_collision!(
     end
     nothing
 end
-
-
 
 function step!(
             colloid_coords::PointMatrix,
