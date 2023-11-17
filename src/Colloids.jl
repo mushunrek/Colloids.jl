@@ -21,7 +21,8 @@ A Julia module to simulate colloids.
 module Colloids
 
 using LoopVectorization
-using JLD2, DelimitedFiles, Formatting
+using JLD2, DelimitedFiles, Formatting, DataFrames, Tables
+import CSV
 using Plots, PoVRay
 
 include("points.jl")
@@ -36,7 +37,7 @@ export Point, PointList
 export Potential, Null, Quadratic, DelayedQuadratic
 export Particle, Ball, Fluid 
 export ColloidsInFluid, ColloidsInSemicolloids
-export animate, povray
+export animate, povray, to_csv
 
 """
 # Type docstring
@@ -367,5 +368,23 @@ function povray(sim::ColloidsInFluid, output_path::String="./test.mp4")
     run(`ffmpeg -y -framerate 10 -i /tmp/pov/pic%d.png -c:v libx264 -pix_fmt yuv420p $output_path`)
 end
 
+
+function to_csv(sim::ColloidsInFluid; folder="./data/")
+    mkpath(folder)
+    for i in eachindex(sim.coords[1,:])
+        coords = DataFrame(
+        reshape(map( (x) -> fmt("6.10f", x), 
+            copy(
+                reinterpret(
+                    Float64, 
+                    sim.coords[:, i]
+                )
+            )),
+            (length(sim.coords[:, i]), 2) 
+        ), :auto)
+        t = (i-1)*sim.Δt
+        CSV.write("$(folder)boules$(fmt("2.10f", t)).csv", coords; header=false)
+    end
+end
 
 end
