@@ -396,6 +396,16 @@ function povray(sim::ColloidsInFluid, output_path::String="./test.mp4")
     run(`ffmpeg -y -framerate 10 -i /tmp/pov/pic%d.png -c:v libx264 -pix_fmt yuv420p $output_path`)
 end
 
+"""
+    to_csv(sim::T [; folder]) where T <: AbstractSimulation
+
+Writes simulation data to CSV files. If no folder is specified, files will be
+saved in "./data/". Each file corresponds to one timestamp which is also used
+to name the file. In the case of `ColloidsInSemicolloids`, the coordinates of the
+semicolloids are appended to the colloid coordinates. As such, it is 
+important to save the parameters to extract the information later on.
+"""
+function to_csv end
 
 function to_csv(sim::ColloidsInFluid; folder="./data/")
     mkpath(folder)
@@ -415,17 +425,6 @@ function to_csv(sim::ColloidsInSemicolloids; folder="./data/")
         CSV_writer(data, filename)
     end
 end
-
-"""
-    to_csv(sim::T [; folder]) where T <: AbstractSimulation
-
-Writes simulation data to CSV files. If no folder is specified, files will be
-saved in "./data/". Each file corresponds to one timestamp which is also used
-to name the file. In the case of `ColloidsInSemicolloids`, the coordinates of the
-semicolloids are appended to the colloid coordinates. As such, it is 
-important to save the parameters to extract the information later on.
-"""
-to_csv
 
 
 """
