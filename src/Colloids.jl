@@ -287,7 +287,7 @@ end
 Produces a GIF of the simulation and saves it at the given location. 
 For the keywords, refer to the documentation of the particular methods.
 """
-animate
+function animate end
 
 """
     animate(sim::ColloidsInFluid, filename [; fps, skipframtes])
