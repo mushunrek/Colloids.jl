@@ -131,7 +131,7 @@ function update_displacement!(
                                     ) .* magic_cst2 :
                                     zeros(Point)
                             )
-    @. displacement = scaled_noise - displacement
+    @. displacement = scaled_noise + displacement
     return nothing
 end
 
