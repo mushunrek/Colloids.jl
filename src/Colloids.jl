@@ -276,9 +276,22 @@ function circle(c, r)
 end
 
 """
-    animate(sim, filename)
+    animate(sim:T, filename [; keyargs]) where T <: AbstractSimulation
 
-Produces a GIF of the simulation and saves it at the given location.
+Produces a GIF of the simulation and saves it at the given location. 
+For the keywords, refer to the documentation of the particular methods.
+"""
+animate
+
+"""
+    animate(sim::ColloidsInFluid, filename [; fps, skipframtes])
+
+See `?animate` for the general description.
+
+- `fps` (default: `20`): determines the GIF frame rate. One frame corresponds to 
+    one timestamp.
+- `skipframes` (default: `0`): Determines the number of timestamps to be 
+    skipped between frames.
 """
 function animate(sim::ColloidsInFluid, filename; fps=20, skipframes=0)
     anim = @animate for t in 1:size(sim.coords, 2)
@@ -305,9 +318,16 @@ end
 
 
 """
-    animate(sim, filename)
+    animate(sim::ColloidsInSemicolloids, filename [; fps, skipframes, semicolloids])
 
-Produces a GIF of the simulation and saves it at the given location.
+See `?animate` for the general description.
+
+- `fps` (default: `20`): determines the GIF frame rate. One frame corresponds to 
+    one timestamp.
+- `skipframes` (default: `0`): Determines the number of timestamps to be 
+    skipped between frames.
+- `semicolloids` (default: `true`): Determines whether semicolloids are plotted
+    (if `true`) or disregarded in the plots (if `false`).
 """
 function animate(sim::ColloidsInSemicolloids, filename; fps=20, skipframes=0, semicolloids=true)
     anim = @animate for t in 1:size(sim.colloid_coords, 2)
@@ -344,6 +364,8 @@ function animate(sim::ColloidsInSemicolloids, filename; fps=20, skipframes=0, se
     end
     return gif(anim, filename, fps=fps)
 end
+
+
 
 
 function povray(sim::ColloidsInFluid, output_path::String="./test.mp4")
