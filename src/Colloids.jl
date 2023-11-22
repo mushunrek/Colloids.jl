@@ -21,8 +21,7 @@ A Julia module to simulate colloids.
 module Colloids
 
 using LoopVectorization
-using JLD2, DelimitedFiles, Formatting, DataFrames, Tables
-import CSV
+using JLD2, DelimitedFiles, Formatting
 using Plots, PoVRay
 
 include("points.jl")
@@ -394,18 +393,45 @@ end
 function to_csv(sim::ColloidsInFluid; folder="./data/")
     mkpath(folder)
     for i in eachindex(sim.coords[1,:])
-        coords = DataFrame(
-        reshape(map( (x) -> fmt("6.10f", x), 
-            copy(
-                reinterpret(
-                    Float64, 
-                    sim.coords[:, i]
-                )
-            )),
-            (length(sim.coords[:, i]), 2) 
-        ), :auto)
         t = (i-1)*sim.Δt
-        CSV.write("$(folder)boules$(fmt("2.10f", t)).csv", coords; header=false)
+        filename = "$(folder)boules$(fmt("2.10f", t)).csv"
+        CSV_writer(sim.coords[:, i], filename)
+    end
+end
+
+function to_csv(sim::ColloidsInSemicolloids; folder="./data/")
+    mkpath(folder)
+    for i in eachindex(sim.colloid_coords[1, :])
+        t = (i-1)*sim.Δt
+        data = vcat( sim.colloid_coords[:, i], sim.semicolloid_coords[:, i] )
+        filename = "$(folder)boules$(fmt("2.10f", t)).csv"
+        CSV_writer(data, filename)
+    end
+end
+
+"""
+    to_csv(sim::T [; folder]) where T <: AbstractSimulation
+
+Writes simulation data to CSV files. If no folder is specified, files will be
+saved in "./data/". Each file corresponds to one timestamp which is also used
+to name the file. In the case of `ColloidsInSemicolloids`, the coordinates of the
+semicolloids are appended to the colloid coordinates. As such, it is 
+important to save the parameters to extract the information later on.
+"""
+to_csv
+
+
+"""
+    CSV_writer(coords::PointList, filename::String [; format::String])
+
+Writes a `PointList` to a CSV file. The default format for floating point numbers
+is "6.10f".
+"""
+function CSV_writer(coords::PointList, filename::String; format::String="6.10f")
+    open(filename, "w") do f
+        for c in coords
+            printfmtln(f, "{1:$format},{2:$format},", c...)
+        end
     end
 end
 
