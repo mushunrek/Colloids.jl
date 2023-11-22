@@ -39,13 +39,20 @@ export ColloidsInFluid, ColloidsInSemicolloids
 export animate, povray, to_csv
 
 """
+# Type docstring 
+
+Abstract type to supertype both `ColloidsInFluid` and `ColloidsInSemicolloids`.
+"""
+abstract type AbstractSimulation end
+
+"""
 # Type docstring
     ColloidsInFluid(coords::PointMatrix, colloid::Ball, fluid::Fluid, T::Float64, Δt::Float64)
 
 Object containing the simulation data with given parameters. `coords` contains the
 full evolution with dimensions (coordinates, time).
 """
-struct ColloidsInFluid
+struct ColloidsInFluid <: AbstractSimulation
     coords::PointMatrix
     colloid::Ball
     fluid::Fluid
@@ -64,7 +71,7 @@ end
 Object containing the simulation data with given parameters. `colloid_coords` 
 and `semicolloid_coords` contain the full evolution with dimensions (coordinates, time).
 """
-struct ColloidsInSemicolloids
+struct ColloidsInSemicolloids <: AbstractSimulation
     colloid_coords::PointMatrix
     semicolloid_coords::PointMatrix
     colloid::Ball
