@@ -33,7 +33,7 @@ end
 Return the index of an element at position `(i,j)`in a lower triangular `n×n` matrix 
 when elements are indexed columnwise from left to right.
 """
-@inline triangular_index(i, j, n) = @fastmath (j-1)*(2*n - j - 2) ÷ 2 + (i - j)
+@inline triangular_index(i, j, n) = @fastmath (j-1)*(2*n - j) ÷ 2 + (i - j)
 
 
 @inline modifier(rel_pos::Point, rel_prod, rel_dist_sq) = @fastmath (rel_prod / rel_dist_sq) .* rel_pos
