@@ -228,7 +228,7 @@ Updates the `displacement` if collisions occur.
 - `displacement::Vector{SVector{2, Float64}}`: displacement of balls (to be updated in place)
 - `coords::Vector{SVector{2, Float64}}`: coordinates of balls 
 - `collision_times::Vector{Float64}`: times of potential collisions, see also `?update_collision_times!`
-- `end_of_collision::Float64`: time horizon up to which collisions are handeled
+- `time_horizon`: time horizon up to which collisions are handeled
 """
 function handle_collisions!(
                 displacement::PointList,
