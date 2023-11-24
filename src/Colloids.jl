@@ -376,6 +376,8 @@ end
 
 function povray(sim::ColloidsInFluid, output_path::String="./test.mp4")
     mkpath("/tmp/pov")
+function povray(sim::ColloidsInFluid, output_path::String="./test.mp4"; fps=10)
+    tempdir = mktempdir(prefix="pov_")
     center = sum(sim.coords[:, end])/length(sim.coords[:, end])
     k = floor(Int, log(10, length(sim.coords[1, :]))) + 1
     Threads.@threads for t in eachindex(sim.coords[1,:])
