@@ -12,7 +12,7 @@ end
 (p::Potential)(x::Point) = p.potential(x)
 
 Null = Potential(x -> zeros(Point))
-Quadratic(; strength) = Potential(x -> strength*x)
+Quadratic(; strength=1.0) = Potential(x -> strength*x)
 function DelayedQuadratic(; delay, strength)
     @inline function f(x::Point)
         r2 = sq_norm(x)
