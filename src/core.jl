@@ -103,7 +103,7 @@ end
 # implementation of the functions for ColloidsInFluid
 
 """
-    update_displacement!(displacement, coords, colloid, Δt, Σ, rl, rs, zs, Δt, noise)
+    update_displacement!(displacement, coords, colloid, Δt, magic_cst1, magic_cst2, scaled_noise)
 
 Computes the new displacement in place.
 
@@ -223,7 +223,7 @@ end
 
 
 """
-    handle_collisions!(displacement, coords, collision_times, end_of_collision)
+    handle_collisions!(displacement, coords, collision_times, time_horizon)
 
 Updates the `displacement` if collisions occur.
 
