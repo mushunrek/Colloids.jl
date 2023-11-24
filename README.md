@@ -16,8 +16,10 @@ using Colloids
 # define the initial colloid coordiantes
 initial_configuration = [ [1.42*i, 1.42*i] for i in 1:10 ]
 
-# colloid radius = 1.0, colloid diffusivity = 1.0
-colloid = Ball(1.0, 1.0)
+# define a quadratic potential to push colloids towards the center
+potential = Quadratic()
+# colloid radius = 1.0, colloid diffusivity = 1.0, colloids move in the quadratic potential
+colloid = Ball(1.0, 1.0, potential=potential)
 # fluid particle radius = 0.15, fluid density = 30.0
 fluid = Fluid(0.15, 30.0)
 
@@ -31,7 +33,7 @@ time_tolerance = 1e-8
 # run simulation
 simulation = ColloidsInFluid(
 				initial_configuration,
-    			colloid, fluid,
+    			    colloid, fluid,
        			T, Δt, time_tolerance
 				)
 ```
@@ -45,7 +47,7 @@ animate(simulation, "output.gif", skipframes=10)
 to_csv(simulation)
 
 # use a rudimentary PoVRay wrapper to directly produce a video via PoVRay
-povray(simulation, output_path="output-mp4", fps=30)
+povray(simulation, output_path="output.mp4", fps=30)
 ```
 
 ### A simulation of colloids in semicolloids
