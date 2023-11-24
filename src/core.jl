@@ -103,13 +103,15 @@ end
 # implementation of the functions for ColloidsInFluid
 
 """
-    update_displacement!(displacement, coords, Σ, rl, rs, zs, Δt, noise)
+    update_displacement!(displacement, coords, colloid, Δt, Σ, rl, rs, zs, Δt, noise)
 
 Computes the new displacement in place.
 
 # Arguments
 - `displacement::PointList`: pre-allocated container
 - `coords::PointList`: coordinates of balls 
+- `colloid::Ball`: parameters of the colloid 
+- `Δt::Float64`: time step
 - `magic_cst1`: equals `4*dls^2`, where `dls = diameter(colloid, fluid)`
 - `magic_cst2`: equals `Σ*density(fluid)*dls*Δt`
 - `scaled_noise::PointList`: pre-allocated centered normal random variables with
@@ -269,7 +271,7 @@ end
 
 
 """
-    step!(coords, displacement, collision_times, Σ, rl, rs, zs, t, Δt, time_tolerance, noise)
+    step!(coords, displacement, collision_times, magic_cst1, magic_cst2, sq_diam, colloid, Δt, time_tolerance, t, scaled_noise)
 
 Computes the `t`-th step of the simulation.
 
@@ -283,6 +285,8 @@ Computes the `t`-th step of the simulation.
     potential collisions.
 - `magic_cst1`: magic constant, see `?update_displacement!`
 - `magic_cst2`: idem
+- `sq_diam`: squared diameter of colloid
+- `colloid`: parameters of colloid
 - `Δt::Float64`: Time step 
 - `time_tolerance::Float64`: Temporal resolution of collisions
 - `t::Int`: Current time index
