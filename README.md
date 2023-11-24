@@ -33,8 +33,8 @@ time_tolerance = 1e-8
 # run simulation
 simulation = ColloidsInFluid(
 				initial_configuration,
-    			    colloid, fluid,
-       			T, Δt, time_tolerance
+				colloid, fluid,
+				T, Δt, time_tolerance
 				)
 ```
 
