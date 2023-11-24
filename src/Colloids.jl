@@ -371,31 +371,27 @@ function animate(sim::ColloidsInSemicolloids, filename; fps=20, skipframes=0, se
     return gif(anim, filename, fps=fps)
 end
 
-
-
-
-function povray(sim::ColloidsInFluid, output_path::String="./test.mp4")
-    mkpath("/tmp/pov")
 function povray(sim::ColloidsInFluid, output_path::String="./test.mp4"; fps=10)
     tempdir = mktempdir(prefix="pov_")
     center = sum(sim.coords[:, end])/length(sim.coords[:, end])
     k = floor(Int, log(10, length(sim.coords[1, :]))) + 1
     Threads.@threads for t in eachindex(sim.coords[1,:])
         coords = sim.coords[:, t]
-        objects = Array{Object}(undef, length(coords))
+        objects = Array{Object}(undef, 2*length(coords))
         @inbounds @simd for i in eachindex(coords)
             p = [ coords[i][1], 0.0, coords[i][2] ]
-            objects[i] = Colored(Sphere(p, radius(sim.colloid)), RGBFT("red"))
+            objects[i] = Colored(Sphere(p, diameter(sim.colloid, sim.fluid)), RGBFT("yellow", transmit=0.9))
+            objects[length(coords) + i] = Colored(Sphere(p, radius(sim.colloid)), RGBFT("red"))
         end
         render(
             CSGUnion(objects), 
             LookAtCamera([center[1], 40.0, center[2]], [center[1], 0.0, center[2]]), 
-            ini_path="/tmp/pov/auto_generated$t.ini",
-            pov_path="/tmp/pov/auto_generated$t.pov",
-            output_path="/tmp/pov/pic$(t).png"
+            ini_path="$tempdir/auto_generated$t.ini",
+            pov_path="$tempdir/auto_generated$t.pov",
+            output_path="$tempdir/pic$(t).png"
         )
     end
-    run(`ffmpeg -y -framerate 10 -i /tmp/pov/pic%d.png -c:v libx264 -pix_fmt yuv420p $output_path`)
+    run(`ffmpeg -y -framerate $fps -i $tempdir/pic%d.png -c:v libx264 -pix_fmt yuv420p $output_path`)
 end
 
 """
