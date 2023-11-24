@@ -118,6 +118,7 @@ Computes the new displacement in place.
 function update_displacement!(
         displacement::PointList,
         coords::PointList,
+        colloid::Ball, Δt,
         magic_cst1, magic_cst2,
         scaled_noise::PointList 
     )
@@ -131,7 +132,7 @@ function update_displacement!(
                                     ) .* magic_cst2 :
                                     zeros(Point)
                             )
-    @. displacement = scaled_noise + displacement
+    @. displacement = scaled_noise + displacement - colloid.potential(coords)*Δt
     return nothing
 end
 
@@ -302,6 +303,7 @@ function step!(
             collision_times::Vector{Float64},
             magic_cst1, magic_cst2,
             sq_diam,
+            colloid,
             Δt, time_tolerance, t,
             scaled_noise::PointList
         )
@@ -309,7 +311,7 @@ function step!(
     # initialize coordinates with old ones
     coords[:, t+1] .= coords[:, t]
     # compute displacement 
-    update_displacement!(displacement, coords[:, t+1], magic_cst1, magic_cst2, scaled_noise)
+    update_displacement!(displacement, coords[:, t+1], colloid, Δt, magic_cst1, magic_cst2, scaled_noise)
 
     # compute movement with finer resolution given by `time_tolerance`
     remaining_time = Δt

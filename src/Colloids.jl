@@ -149,7 +149,7 @@ function ColloidsInFluid(
         step!(
             coords, displacement, collision_times, 
             magic_cst1, magic_cst2, sq_diam, 
-            Δt, time_tolerance, t, 
+            colloid, Δt, time_tolerance, t, 
             scaled_noise[:, t]
         )
     end
