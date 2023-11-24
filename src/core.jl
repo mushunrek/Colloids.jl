@@ -363,11 +363,12 @@ end
             semicolloid_coords::PointList,
             colloid::Ball,
             semicolloid::Ball,
+            Δt,
             scaled_colloid_noise::PointList, 
             scaled_semicolloid_noise::PointList
         )
-    @. colloid_displacement = scaled_colloid_noise - colloid.potential(colloid_coords)
-    @. semicolloid_displacement = scaled_semicolloid_noise - semicolloid.potential(semicolloid_coords)
+    @. colloid_displacement = scaled_colloid_noise - colloid.potential(colloid_coords)*Δt
+    @. semicolloid_displacement = scaled_semicolloid_noise - semicolloid.potential(semicolloid_coords)*Δt
     nothing
 end
 
@@ -586,6 +587,7 @@ function step!(
         colloid_coords[:, t+1],
         semicolloid_coords[:, t+1],
         colloid, semicolloid,
+        Δt,
         scaled_colloid_noise, scaled_semicolloid_noise
     )
 
