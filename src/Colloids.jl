@@ -22,7 +22,7 @@ module Colloids
 
 using LoopVectorization
 using JLD2, DelimitedFiles, Formatting
-using Plots, PoVRay
+using Plots#, PoVRay
 
 include("points.jl")
 include("potentials.jl")
@@ -371,6 +371,7 @@ function animate(sim::ColloidsInSemicolloids, filename; fps=20, skipframes=0, se
     return gif(anim, filename, fps=fps)
 end
 
+"""
 function povray(sim::ColloidsInFluid, output_path::String="./test.mp4"; fps=10)
     tempdir = mktempdir(prefix="pov_")
     center = sum(sim.coords[:, end])/length(sim.coords[:, end])
@@ -386,14 +387,14 @@ function povray(sim::ColloidsInFluid, output_path::String="./test.mp4"; fps=10)
         render(
             CSGUnion(objects), 
             LookAtCamera([center[1], 40.0, center[2]], [center[1], 0.0, center[2]]), 
-            ini_path="$tempdir/auto_generated$t.ini",
-            pov_path="$tempdir/auto_generated$t.pov",
-            output_path="$tempdir/pic$(t).png"
+            ini_path="tempdir/auto_generatedt.ini",
+            pov_path="tempdir/auto_generatedt.pov",
+            output_path="tempdir/pic(t).png"
         )
     end
-    run(`ffmpeg -y -framerate $fps -i $tempdir/pic%d.png -c:v libx264 -pix_fmt yuv420p $output_path`)
+    run(`ffmpeg -y -framerate fps -i tempdir/pic%d.png -c:v libx264 -pix_fmt yuv420p output_path`)
 end
-
+"""
 """
     to_csv(sim::T [; folder]) where T <: AbstractSimulation
 
